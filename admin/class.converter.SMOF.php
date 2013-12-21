@@ -72,8 +72,12 @@ if( !class_exists( 'SMOF2Redux' ) ) {
 		}		
 
 		function ajax_callback() {
+
+			$_REQUEST = array_filter($_REQUEST);
+			print_r($_REQUEST);
+
 			if ( !wp_verify_nonce( $_REQUEST['nonce'], 'convertToReduxSMOF' ) ) {
-				die();
+				//die();
 			}
 			if (isset($_REQUEST['download'])) {
 				header("Content-Type: application/octet-stream");
@@ -82,11 +86,19 @@ if( !class_exists( 'SMOF2Redux' ) ) {
 			} else {
 				header("Content-Type: text/plain");	
 			}
-			
+
+			$_REQUEST['uuid'] = uniqid($_REQUEST['nonce']);
+			unset($_REQUEST['migrate_data']);
 
 		    $sections = $this->getSections();
 			if ( !empty( $sections ) ) {
-
+				if (!class_exists('Mustache_Autoloader')) {
+					require_once(dirname(__FILE__).'/includes/Mustache/Autoloader.php');	
+				}
+				Mustache_Autoloader::register();
+				$m = new Mustache_Engine;
+				echo $m->render(file_get_contents(dirname(__FILE__).'/includes/outputClass.php'), $_REQUEST); // "Hello World!"
+				die();
 				//echo uniqid($_REQUEST['nonce']);
 				echo '<?
 if (class_exists("ReduxFramework")) {
@@ -243,7 +255,6 @@ if (!function_exists("SMOF2ReduxConvertValue")) {
 	        //header("Expires: 0");
 
 			exit();
-			global $wpdb; // this is how you get access to the database
 		        
 
 			die(); // this is required to return a proper result
@@ -597,6 +608,13 @@ if (!function_exists("SMOF2ReduxConvertValue")) {
 		    echo "<h2 class='description'>The following is the ReduxFramework config code. Use this within your theme. Be sure to change the names and more specifically the opt_name for where the data is stored.</h2><br />";
 		    $sections = $this->getSections(false);
 			if ( !empty( $sections ) ) {
+				if (!class_exists('Mustache_Autoloader')) {
+					require_once(dirname(__FILE__).'/../includes/mustache.php/src/Mustache/Autoloader.php');	
+				}
+				Mustache_Autoloader::register();
+				$m = new Mustache_Engine;
+				echo $m->render('Hello {{planet}}', array('planet' => 'World!')); // "Hello World!"
+
 				echo 'if (class_exists("ReduxFramework")) {
 	$sections = 
 	' . $this->objectToHTML( $sections ) . ';

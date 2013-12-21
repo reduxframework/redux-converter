@@ -6,20 +6,22 @@
  * It is expected that theme authors would copy and paste this code into their
  * functions.php file, and amend to suit.
  *
- * @package	   Redux_Converter
- * @subpackage TGM Activation
- * @version	   1.0.0
- * @author	   Dovy Paukstys <dovy@reduxframework.com>
- * @copyright  Copyright (c) 2013, Dovy Pauktys
- * @link       https://github.com/ReduxFramework/redux-converter
+ * @package	   TGM-Plugin-Activation
+ * @subpackage Example
+ * @version	   2.3.6
+ * @author	   Thomas Griffin <thomas@thomasgriffinmedia.com>
+ * @author	   Gary Jones <gamajo@gamajo.com>
+ * @copyright  Copyright (c) 2012, Thomas Griffin
+ * @license	   http://opensource.org/licenses/gpl-2.0.php GPL v2 or later
+ * @link       https://github.com/thomasgriffin/TGM-Plugin-Activation
  */
 
 /**
  * Include the TGM_Plugin_Activation class.
  */
-require_once dirname( __FILE__ ) . '/class-tgm-plugin-activation.php';
+//require_once dirname( __FILE__ ) . '/class-tgm-plugin-activation.php';
 
-add_action( 'tgmpa_register', 'redux_converter_required_plugin' );
+add_action( 'tgmpa_register', 'my_theme_register_required_plugins', 100 );
 /**
  * Register the required plugins for this theme.
  *
@@ -32,7 +34,7 @@ add_action( 'tgmpa_register', 'redux_converter_required_plugin' );
  * This function is hooked into tgmpa_init, which is fired within the
  * TGM_Plugin_Activation class constructor.
  */
-function redux_converter_required_plugin() {
+function my_theme_register_required_plugins() {
 
 	/**
 	 * Array of plugin arrays. Required keys are name and slug.
@@ -40,12 +42,10 @@ function redux_converter_required_plugin() {
 	 */
 	$plugins = array(
 
-		// This is an example of how to include a plugin pre-packaged with a theme
 		array(
-			'name'     				=> 'Redux Framework', // The plugin name
-			'slug'     				=> 'redux-framework', // The plugin slug (typically the folder name)
-			'required' 				=> true, // If false, the plugin is only 'recommended' instead of required
-			'force_activation' 		=> true, // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch
+			'name' 		=> 'Redux Framework',
+			'slug' 		=> 'redux-framework',
+			'required' 	=> true,
 		),
 
 	);
@@ -68,13 +68,13 @@ function redux_converter_required_plugin() {
 		'menu'         		=> 'install-required-plugins', 	// Menu slug
 		'has_notices'      	=> true,                       	// Show admin notices or not
 		'is_automatic'    	=> true,					   	// Automatically activate plugins after installation or not
-		'message' 			=> '',							// Message to output right before the plugins table
+		'message' 			=> 'Test',							// Message to output right before the plugins table
 		'strings'      		=> array(
 			'page_title'                       			=> __( 'Install Required Plugins', $theme_text_domain ),
 			'menu_title'                       			=> __( 'Install Plugins', $theme_text_domain ),
 			'installing'                       			=> __( 'Installing Plugin: %s', $theme_text_domain ), // %1$s = plugin name
 			'oops'                             			=> __( 'Something went wrong with the plugin API.', $theme_text_domain ),
-			'notice_can_install_required'     			=> _n_noop( 'Redux Converter, the plugin, requires the following plugin: %1$s.', 'Redux Converter, the plugin, requires the following plugins: %1$s.' ), // %1$s = plugin name(s)
+			'notice_can_install_required'     			=> _n_noop( 'This theme requires the following plugin: %1$s.', 'This theme requires the following plugins: %1$s.' ), // %1$s = plugin name(s)
 			'notice_can_install_recommended'			=> _n_noop( 'This theme recommends the following plugin: %1$s.', 'This theme recommends the following plugins: %1$s.' ), // %1$s = plugin name(s)
 			'notice_cannot_install'  					=> _n_noop( 'Sorry, but you do not have the correct permissions to install the %s plugin. Contact the administrator of this site for help on getting the plugin installed.', 'Sorry, but you do not have the correct permissions to install the %s plugins. Contact the administrator of this site for help on getting the plugins installed.' ), // %1$s = plugin name(s)
 			'notice_can_activate_required'    			=> _n_noop( 'The following required plugin is currently inactive: %1$s.', 'The following required plugins are currently inactive: %1$s.' ), // %1$s = plugin name(s)

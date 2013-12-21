@@ -36,10 +36,8 @@ if ( ! defined( 'WPINC' ) ) {
  *----------------------------------------------------------------------------*/
 
 if ( is_admin() ) {
-
+	require_once( plugin_dir_path( __FILE__ ) . 'admin/includes/class-tgm-plugin-activation.php' );
 	require_once( plugin_dir_path( __FILE__ ) . 'admin/class.redux-converter.php' );
 	add_action( 'plugins_loaded', array( 'Redux_Converter', 'get_instance' ) );
-
-	require_once( plugin_dir_path( __FILE__ ) . 'includes/redux-framework.php' );
 
 }
