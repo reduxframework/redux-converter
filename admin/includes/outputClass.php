@@ -3,25 +3,27 @@ if ( !class_exists( "ReduxFramework" ) ) {
 	return;
 }
 
-if ( !class_exists( "SMOF2Redux_{{opt_name}}_{{uuid}}" ) ) {
-	class SMOF2Redux_{{opt_name}}_{{uuid}} {
+if ( !class_exists( "Redux_Framework_{{opt_name}}_{{uuid}}" ) ) {
+	class Redux_Framework_{{opt_name}}_{{uuid}} {
 		public function __construct( ) {
+
 			// Your base config file for Redux
-			add_action( 'redux/loaded', array($this, 'addPanel') );
+			add_action( 'after_setup_theme', array($this, 'loadConfig') );
 			
 			// Data migration for SMOF
 			{{^migrate_data}}//{{/migrate_data}}add_action("after_switch_theme", array($this, "migrate_SMOF_data"), 10 ,  2);	
 			
 		}
 
-		public function addPanel() {
-			$sections = array();
+		public function loadConfig() {
+
+			$sections = {{sections}};
 
 			// Change your opt_name to match where you want the data saved.
 			$args = array(
 				"opt_name"=>"{{opt_name}}", // Where your data is stored. Use a different name or use the same name as your current theme. Must match the $database_newName variable in the converter code.
-				"menu_title" => "{{menu_title}}", // Title for your menu item
-				"page_slug" => "{{page_slug}}", // Make this the same as your opt_name unless you care otherwise
+				{{^menu_title}}//{{/menu_title}}"menu_title" => "{{menu_title}}", // Title for your menu item
+				{{^page_slug}}//{{/page_slug}}"page_slug" => "{{page_slug}}", // Make this the same as your opt_name unless you care otherwise
 				{{^global_variable}}//{{/global_variable}}"global_variable" => "{{global_variable}}", // By default Redux sets your global variable to be the opt_name you set above. This is what the newest SMOF uses as it's variable name. You can change, but you may need to update your files.
 				//"intro_text" => "<p>This theme is now using Redux</p>" // Extra header info
 				{{^google_api_key}}//{{/google_api_key}}"google_api_key" => "{{google_api_key}}", // You must acquire a Google Web Fonts API key if you want Google Fonts to work
@@ -135,7 +137,7 @@ if ( !class_exists( "SMOF2Redux_{{opt_name}}_{{uuid}}" ) ) {
 		}
 				
 	}
-	new SMOF2Redux_{{opt_name}}_{{uuid}}();
+	new Redux_Framework_{{opt_name}}_{{uuid}}();
 }
 
 

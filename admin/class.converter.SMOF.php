@@ -90,14 +90,17 @@ if( !class_exists( 'SMOF2Redux' ) ) {
 			$_REQUEST['uuid'] = uniqid($_REQUEST['nonce']);
 			unset($_REQUEST['migrate_data']);
 
-		    $sections = $this->getSections();
-			if ( !empty( $sections ) ) {
+
+		    $_REQUEST['sections'] = $this->getSections();
+
+			if ( !empty( $_REQUEST['sections'] ) ) {
+				$_REQUEST['sections'] =  $this->objectToHTML( $_REQUEST['sections'] );
 				if (!class_exists('Mustache_Autoloader')) {
 					require_once(dirname(__FILE__).'/includes/Mustache/Autoloader.php');	
 				}
 				Mustache_Autoloader::register();
 				$m = new Mustache_Engine;
-				echo $m->render(file_get_contents(dirname(__FILE__).'/includes/outputClass.php'), $_REQUEST); // "Hello World!"
+				echo htmlspecialchars_decode(htmlspecialchars_decode( $m->render(file_get_contents(dirname(__FILE__).'/includes/outputClass.php'), $_REQUEST ) ) );
 				die();
 				//echo uniqid($_REQUEST['nonce']);
 				echo '<?
@@ -308,7 +311,9 @@ if (!function_exists("SMOF2ReduxConvertValue")) {
 			    if (isset($value['folds'])) {
 			    	unset($value['folds']);
 			    }	    
-
+			    if (!isset($value['type'])) {
+			    	continue;
+			    }
 			    switch ($value['type']) {
 			    	case 'heading':
 						if (isset($value['icon']) && !empty($value['icon']) ) {
