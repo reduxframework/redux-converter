@@ -511,7 +511,7 @@ if (!function_exists("SMOF2ReduxConvertValue")) {
 							'type' => 'checkbox',
 							'title' => __('Reset Panel to Old Data', 'redux-framework-demo'), 
 							'subtitle' => __('Reset this panel to match what is inside SMOF.', 'redux-framework-demo'),
-							'desc' => 'Reset this panel to match what is stored in SMOF.<br /><br /><span style="color: red;">There is no undoing this. If something in the conversion goes bad, your previously set data will be lost. It is suggested to leave this be just in case.</span>',
+							'options'=>array(1=>'Reset this panel to match what is stored in SMOF.'),
 						),									    		
 						array(
 							'id'=>'redux_opt_name',
