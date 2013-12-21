@@ -74,7 +74,7 @@ if( !class_exists( 'SMOF2Redux' ) ) {
 		function ajax_callback() {
 
 			$_REQUEST = array_filter($_REQUEST);
-			print_r($_REQUEST);
+			//print_r($_REQUEST);
 
 			if ( !wp_verify_nonce( $_REQUEST['nonce'], 'convertToReduxSMOF' ) ) {
 				//die();
