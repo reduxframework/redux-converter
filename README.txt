@@ -66,6 +66,10 @@ Not true. With the config file there's also a data conversion function that's pr
 = Wow, this is amazing! How can I help? =
 Please donate!
 
+== Screenshots ==
+
+1. This demonstrates how you can take any theme using one of the accepted frameworks, and run it through Redux. Avada is a trademark of ThemeFusion. We only used this theme as it has a fair amount of exposure. We claim no rights to Avada.  :P
+
 == Changelog ==
 
 = 1.0 =
