@@ -153,10 +153,9 @@ class Redux_Converter {
 				//$this->frameworks['OptionFramework'][] = new OptionFramework2Redux($this);
 			}
 		}
-		return;
 		if (defined('OT_VERSION')) {
-			require_once(dirname(__FILE__).'/class.converter.OptionTree.php');	
-			$this->frameworks['OptionTree'][] = new OptionTree2Redux($this);
+			//require_once(dirname(__FILE__).'/class.converter.OptionTree.php');	
+			//$this->frameworks['OptionTree'][] = new OptionTree2Redux($this);
 		}
 	}
 
@@ -336,5 +335,32 @@ class Redux_Converter {
 		load_textdomain( $domain, trailingslashit( WP_LANG_DIR ) . $domain . '/' . $domain . '-' . $locale . '.mo' );
 
 	}
+
+	function getConfigFile( $data ) {
+		if (!class_exists('Mustache_Autoloader')) {
+			require_once(dirname(__FILE__).'/includes/Mustache/Autoloader.php');	
+		}
+		Mustache_Autoloader::register();
+		$m = new Mustache_Engine;
+		return htmlspecialchars_decode(htmlspecialchars_decode( $m->render(file_get_contents(dirname(__FILE__).'/includes/outputClass.php'), $data ) ) );
+
+	}
+
+	function objectToHTML($object) {
+        // create html
+        $html = var_export($object, true);
+        
+        // change double spaces to tabs
+        $html = str_replace("  ", "\t", $html);
+        
+        // correctly formats "=> array("
+        $html = preg_replace('/([\t\r\n]+?)array/', 'array', $html);
+        
+        // Remove number keys from array
+        $html = preg_replace('/[0-9]+ => array/', 'array', $html);
+        
+        // add extra tab at start of each line
+        return str_replace("\n", "\n\t", $html);
+	}		
 
 }

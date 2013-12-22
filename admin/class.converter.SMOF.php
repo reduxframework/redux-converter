@@ -9,36 +9,16 @@ if( !class_exists( 'SMOF2Redux' ) ) {
 		public $data;
 		public $config;
 		public $sections;
+		public $framework = "SMOF";
 
 		public function __construct( $converter ) {
 			
 			$this->converter = $converter;
 
-			// Find the version
-			if (defined('SMOF_VERSION')) {
-				$this->version = SMOF_VERSION;
-			} else {
-				$this->version = '1.3';
-			}
-
-			// Get the saved data
-			if ( $this->version <= "1.5" ) {
-				// Get the old data values
-				global $data;
-				$this->data = $data;
-
-				if ( defined( 'OPTIONS' ) ) {
-					$this->database = OPTIONS;	
-				}
-			} else {
-				global $smof_data;
-				$this->data = $smof_data;
-			}
-
 			add_action('init', array($this, 'addPanel'), 100);
 
 			add_action( 'admin_footer', array($this,'ajax_javascript') );
-			add_action( 'wp_ajax_SMOF_2_Redux', array($this,'ajax_callback') );
+			add_action( 'wp_ajax_'.$this->framework.'_2_Redux', array($this,'ajax_callback') );
 		}
 
 
@@ -50,12 +30,12 @@ if( !class_exists( 'SMOF2Redux' ) ) {
 				$('.redux-converter-action').click(function() {
 					var parent = $(this).parents('.redux-group-tab:first');
 					var data = {
-						action: 'SMOF_2_Redux',
+						action: '<?php echo $this->framework; ?>_2_Redux',
 						nonce: parent.find('.convertToReduxNonce').val(),
 						opt_name: parent.find('#redux_opt_name-text').val(),
 						migrate_data: parent.find('#redux_convert_data').val(),
 						global_variable: parent.find('#redux_global_variable-text').val(),
-						delete_data: parent.find('#SMOF2Redux_Panel_redux_delete_old_data_1_0').is(":checked"),
+						delete_data: parent.find('#<?php echo $this->framework; ?>2Redux_Panel_redux_delete_old_data_1_0').is(":checked"),
 					};
 					if ($(this).data('action') == "download") {
 						data.download = true;
@@ -76,12 +56,14 @@ if( !class_exists( 'SMOF2Redux' ) ) {
 			$_REQUEST = array_filter($_REQUEST);
 			//print_r($_REQUEST);
 
-			if ( !wp_verify_nonce( $_REQUEST['nonce'], 'convertToReduxSMOF' ) ) {
+			if ( !wp_verify_nonce( $_REQUEST['nonce'], 'convertToRedux' . $this->framework ) ) {
 				//die();
 			}
 			if (isset($_REQUEST['download'])) {
 				header("Content-Type: application/octet-stream");
 				header("Content-Transfer-Encoding: Binary");
+				header("Pragma: no-cache");
+				header("Expires: 0");
 				header("Content-disposition: attachment; filename=\"ReduxFramework.config.php\""); 
 			} else {
 				header("Content-Type: text/plain");	
@@ -90,195 +72,20 @@ if( !class_exists( 'SMOF2Redux' ) ) {
 			$_REQUEST['uuid'] = uniqid($_REQUEST['nonce']);
 			unset($_REQUEST['migrate_data']);
 
-
 		    $_REQUEST['sections'] = $this->getSections();
 
 			if ( !empty( $_REQUEST['sections'] ) ) {
-				$_REQUEST['sections'] =  $this->objectToHTML( $_REQUEST['sections'] );
-				if (!class_exists('Mustache_Autoloader')) {
-					require_once(dirname(__FILE__).'/includes/Mustache/Autoloader.php');	
-				}
-				Mustache_Autoloader::register();
-				$m = new Mustache_Engine;
-				echo htmlspecialchars_decode(htmlspecialchars_decode( $m->render(file_get_contents(dirname(__FILE__).'/includes/outputClass.php'), $_REQUEST ) ) );
-				die();
-				//echo uniqid($_REQUEST['nonce']);
-				echo '<?
-if (class_exists("ReduxFramework")) {
-	$sections = 
-	' . $this->objectToHTML( $sections ) . ';
 
-	// Change your opt_name to match where you want the data saved.
-	$args = array(
-		"opt_name"=>"'.($_REQUEST["opt_name"] ? $_REQUEST["opt_name"] : 'redux_panel').'", // Where your data is stored. Use a different name or use the same name as your current theme. Must match the $database_newName variable in the converter code.
-		"menu_title" => "Redux Converted", // Title for your menu item
-		"page_slug" => "'.($_REQUEST["opt_name"] ? $_REQUEST["opt_name"] : 'redux_panel').'", // Make this the same as your opt_name unless you care otherwise
-		';
-if (empty($_REQUEST['global_variable'])) {
-	echo '//';
-}
-echo '"global_variable" => "'.(!empty( $_REQUEST["global_variable"] ) ? $_REQUEST["global_variable"] : $_REQUEST["opt_name"]).'", // By default Redux sets your global variable to be the opt_name you set above. This is what the newest SMOF uses as it\'s variable name. You can change, but you may need to update your files.
-		//"intro_text" => "<p>This theme is now using Redux</p>" // Extra header info
-		"google_api_key" => "", // You must acquire a Google Web Fonts API key if you want Google Fonts to work
-	);
-	// Use this section if this is for a theme. Replace with plugin specific data if it is for a plugin.
-	$theme = wp_get_theme();
-	$args["display_name"] = $theme->get("Name");
-	$args["display_version"] = $theme->get("Version");
+				$_REQUEST['sections'] =  $this->converter->objectToHTML( $_REQUEST['sections'] );
 
-	$ReduxFramework = new ReduxFramework($sections, $args);
-}
-
-';
-
-
-if ($_REQUEST['migrate_date'] == true) {
-echo '
-function migrateSMOFDataToRedux($oldname, $oldtheme=false) {
-	$database_newName = "'.($_REQUEST["opt_name"] ? $_REQUEST["opt_name"] : 'redux_panel').'"; // Where your data will now be saved. Must match your opt_name in the ReduxFramework $args array.
-	';
-
-	if (SMOF_VERSION == "1.5.1" || SMOF_VERSION == "1.5.1") {
-		echo '$data = get_theme_mods(); // SMOF 1.5.1+';
-	} else {
-		if (defined('OPTIONS')) {
-			echo '$data = get_option('.OPTIONS.');';
-		} else {
-			echo '$data = get_option(""); // Please provide the option name where your SMOF values are stored.';
-		}
-	}
-	echo '
-	
-	$sections = '.str_replace(array("\r\n", "\n", "\r", "  ", "	"), '',var_export($sections, true)).';
-	if (isset($data) && !empty($data)) {
-		foreach($sections as $section) {
-			foreach($section["fields"] as $field) {
-				if (isset($data[$field["id"]]) && !empty($data[$field["id"]])) {
-					$data[$field["id"]] = SMOF2ReduxConvertValue($data[$field["id"]], $field["type"]); // Not sure why this happens. Huh.
-				}
-				if( isset( $field["required"] ) ) {
-		            $ReduxFramework->get_fold($field);
-			    }		
-			}
-		}
-		update_option($database_newName, $data); // Update the database
-	}
-		
-}
-add_action("after_switch_theme", "updatedatabaseoptions", 10 ,  2);
-
-if (!function_exists("SMOF2ReduxConvertValue")) {
-	function SMOF2ReduxConvertValue($value, $type) {
-	    switch ($type) {
-			case "text":
-				if (!is_array($value)) {
-					$value = stripcslashes($value); // Not sure why this happens. Huh.
-				}
-	    		break;
-	    	case "typography":
-				$default = array();
-				if (isset($value["size"])) {
-					$default["font-size"] = $value["size"];
-					$px = filter_var($default["font-size"], FILTER_SANITIZE_NUMBER_INT);
-					$default["units"] = str_replace($px, "", $default["font-size"]);
-				}
-				if (isset($value["color"])) {
-					$default["color"] = $value["color"];
-				}
-				if (isset($value["face"])) {
-					$fonts = array(
-						"Arial, Helvetica, sans-serif",
-						"\'Arial Black\', Gadget, sans-serif",
-						"\'Bookman Old Style\', serif",
-						"\'Comic Sans MS\', cursive",
-						"Courier, monospace",
-						"Garamond, serif",
-						"Georgia, serif",
-						"Impact, Charcoal, sans-serif",
-						"\'Lucida Console\', Monaco, monospace",
-						"\'Lucida Sans Unicode\', \'Lucida Grande\', sans-serif",
-						"\'MS Sans Serif\', Geneva, sans-serif",
-						"\'MS Serif\', \'New York\', sans-serif",
-						"\'Palatino Linotype\', \'Book Antiqua\', Palatino, serif",
-						"Tahoma, Geneva, sans-serif",
-						"\'Times New Roman\', Times, serif",
-						"\'Trebuchet MS\', Helvetica, sans-serif",
-						"Verdana, Geneva, sans-serif",
-	                );
-	                foreach($fonts as $font) {
-	                	if (strpos(strtolower($font),strtolower($value["face"])) !== false) {
-							$default["font-family"] = $font;
-						}
-	                }
-				}
-				if (isset($value["style"])) {
-					if (strpos(strtolower($value["style"]),"bold") !== false) {
-						$default["font-weight"] = "bold";
-					}
-					if (strpos(strtolower($value["style"]),"italic") !== false) {
-						$default["font-style"] = "italic";
-					}
-				} 			
-				$value = $default;
-	    		break;
-	    	case "border":
-	    		if (isset($value["width"])) {
-	    			$value["border-width"] = $value["width"]."px";
-	    			$value["units"] = "px";
-	    			unset($value["width"]);
-	    		}
-				if (isset($value["color"])) {
-	    			$value["border-color"] = $value["color"];
-	    			unset($value["color"]);
-	    		}
-				if (isset($value["style"])) {
-	    			$value["border-style"] = $value["style"];
-	    			unset($value["style"]);
-	    		}
-	    		break;			    			    			    			    		
-	    	case "upload":
-	    	case "image":
-			case "media":
-				$value = array("url"=>$value);
-	    		break;    	
-	    	default:
-	    		break;
-	    }
-		return $value;
-	}	
-}
-
-';
-}
+				echo $this->converter->getConfigFile($_REQUEST);
 
 			}
-			//header("Content-type: application/x-msdownload");
-	        //header("Content-Disposition: attachment; filename=data.csv");
-	        //header("Pragma: no-cache");
-	        //header("Expires: 0");
-
-			exit();
-		        
 
 			die(); // this is required to return a proper result
 		}
 
-		function objectToHTML($object) {
-	        // create html
-	        $html = var_export($object, true);
-	        
-	        // change double spaces to tabs
-	        $html = str_replace("  ", "\t", $html);
-	        
-	        // correctly formats "=> array("
-	        $html = preg_replace('/([\t\r\n]+?)array/', 'array', $html);
-	        
-	        // Remove number keys from array
-	        $html = preg_replace('/[0-9]+ => array/', 'array', $html);
-	        
-	        // add extra tab at start of each line
-	        return str_replace("\n", "\n\t", $html);
-		}		
+	
 
 		public function getSections($withWarnings = true) {
 			global $of_options;
@@ -455,7 +262,7 @@ if (!function_exists("SMOF2ReduxConvertValue")) {
 			    		break;
 			    }
 				if (isset($value['default']) && !empty($value['default'])) {
-					$value['default'] = SMOF2ReduxConvertValue($value['default'], $value['type']);
+					$value['default'] = $this->convertValue($value['default'], $value['type']);
 				}
 
 			    if (!empty($value)) {
@@ -479,20 +286,41 @@ if (!function_exists("SMOF2ReduxConvertValue")) {
 
 		public function addPanel() {
 
+			// Find the version
+			if (defined('SMOF_VERSION')) {
+				$this->version = SMOF_VERSION;
+			} else {
+				$this->version = '1.3';
+			}
+
+			// Get the saved data
+			if ( $this->version <= "1.5" ) {
+				// Get the old data values
+				global $data;
+				$this->data = $data;
+
+				if ( defined( 'OPTIONS' ) ) {
+					$this->database = OPTIONS;	
+				}
+			} else {
+				global $smof_data;
+				$this->data = $smof_data;
+			}			
+
 			$sections = $this->getSections();
 
 			if (!empty($sections) && class_exists('ReduxFramework')) {
 
 				$args = array(
-					'opt_name'=>'SMOF2Redux_Panel', 
+					'opt_name'=>$this->framework.'2Redux_Panel', 
 					'save_defaults'=>false,
-					'menu_title' => 'SMOF 2 Redux',
+					'menu_title' => $this->framework.' 2 Redux',
 					//'database'	=> 'transient',
 					'output' => false,
 					'show_import_export' => false,
-					'page_slug' => 'SMOF2Redux_Converter',
+					'page_slug' => $this->framework.'Redux_Converter',
 					'enqueue' => false,
-					'intro_text' => '<p>This is your panel converted. Saving will be saved to a transient value which gets reset every hour. <a href="./admin.php?page=smof_2_redux">Proceed here</a> to get the export code you would need to migrate from SMOF to Redux.</p>'
+					'intro_text' => '<p>This is your panel converted. Saving will be saved to a transient value which gets reset every hour. <a href="./admin.php?page='.$this->framework.'_2_redux">Proceed here</a> to get the export code you would need to migrate from '.$this->framework.' to Redux.</p>'
 				);
 				$theme = wp_get_theme();
 
@@ -515,8 +343,8 @@ if (!function_exists("SMOF2ReduxConvertValue")) {
 							'id'=>'redux_convert_refresh_data',
 							'type' => 'checkbox',
 							'title' => __('Reset Panel to Old Data', 'redux-framework-demo'), 
-							'subtitle' => __('Reset this panel to match what is inside SMOF.', 'redux-framework-demo'),
-							'options'=>array(1=>'Reset this panel to match what is stored in SMOF.'),
+							'subtitle' => __('Reset this panel to match what is inside '.$this->framework.'.', 'redux-framework-demo'),
+							'options'=>array(1=>'Reset this panel to match what is stored in '.$this->framework.'.'),
 						),									    		
 						array(
 							'id'=>'redux_opt_name',
@@ -539,7 +367,7 @@ if (!function_exists("SMOF2ReduxConvertValue")) {
 							'type' => 'text',
 							'title' => __('Redux Global Variable', 'redux-framework-demo'), 
 							'subtitle' => __('Redux provides a global variable for your access your panel data anywhere within wordpress.', 'redux-converter'),
-							'desc' => 'By default the global variable is the same as the opt_name. If you want it to be something else (or your old variable), choose a name here. All standard variable rules apply (no spaces, dashes, or other odd symbols). SMOF\'s typical variables (if you wanted to keep your code as is) are $data or $smof_data.',
+							'desc' => 'By default the global variable is the same as the opt_name. If you want it to be something else (or your old variable), choose a name here. All standard variable rules apply (no spaces, dashes, or other odd symbols). '.$this->framework.'\'s typical variables (if you wanted to keep your code as is) are $data or $smof_data.',
 						),				    		
 						array(
 							'id'=>'redux_delete_old_data',
@@ -553,7 +381,7 @@ if (!function_exists("SMOF2ReduxConvertValue")) {
 						array(
 							'id'=>'redux_download_file',
 							'type' => 'raw',
-							'content' => '<center><input type="hidden" class="convertToReduxNonce" value="'.wp_create_nonce( 'convertToReduxSMOF' ).'"><a href="#" target="_blank" class="button button-primary redux-converter-action">View Redux Config File</a> <a href="#" data-action="download" class="button button-primary redux-converter-action">Download Redux Config File</a></center>',
+							'content' => '<center><input type="hidden" class="convertToReduxNonce" value="'.wp_create_nonce( 'convertToRedux'.$this->framework ).'"><a href="#" target="_blank" class="button button-primary redux-converter-action">View Redux Config File</a> <a href="#" data-action="download" class="button button-primary redux-converter-action">Download Redux Config File</a></center>',
 							
 						),			    		
 			    		
@@ -578,7 +406,7 @@ if (!function_exists("SMOF2ReduxConvertValue")) {
 					if (isset($section['fields'])) {
 						foreach($section['fields'] as $field) {
 							if ($convertData && isset($ReduxFramework->options[$field['id']]) && !empty($ReduxFramework->options[$field['id']])) {
-								$ReduxFramework->options[$field['id']] = SMOF2ReduxConvertValue($ReduxFramework->options[$field['id']], $field['type']); // Not sure why this happens. Huh.
+								$ReduxFramework->options[$field['id']] = $this->convertValue($ReduxFramework->options[$field['id']], $field['type']); // Not sure why this happens. Huh.
 							}
 							if( isset( $field['required'] ) ) {
 					            $ReduxFramework->get_fold($field);
@@ -590,265 +418,85 @@ if (!function_exists("SMOF2ReduxConvertValue")) {
 			}			
 		}
 
-
-		
-
-		function addExportMenu() {
-		    add_menu_page(
-		        'SMOF2Redux Export',     // page title
-		        'SMOF2Redux Export',     // menu title
-		        'manage_options',   // capability
-		        'smof_2_redux',     // menu slug
-		        array($this, 'exportPage'), // callback function
-		        null,
-		        600
-		    );
-		}
-
-		function exportPage(){
-		    global $title;
-
-		    echo '<div class="wrap">';
-		    echo "<h1>$title</h1>";
-		    echo "<h2 class='description'>The following is the ReduxFramework config code. Use this within your theme. Be sure to change the names and more specifically the opt_name for where the data is stored.</h2><br />";
-		    $sections = $this->getSections(false);
-			if ( !empty( $sections ) ) {
-				if (!class_exists('Mustache_Autoloader')) {
-					require_once(dirname(__FILE__).'/../includes/mustache.php/src/Mustache/Autoloader.php');	
-				}
-				Mustache_Autoloader::register();
-				$m = new Mustache_Engine;
-				echo $m->render('Hello {{planet}}', array('planet' => 'World!')); // "Hello World!"
-
-				echo 'if (class_exists("ReduxFramework")) {
-	$sections = 
-	' . $this->objectToHTML( $sections ) . ';
-
-	// Change your opt_name to match where you want the data saved.
-	$args = array(
-		"opt_name"=>"redux_panel", // Where your data is stored. Use a different name or use the same name as your current theme. Must match the $database_newName variable in the converter code.
-		"menu_title" => "Redux Converted", // Title for your menu item
-		"page_slug" => "redux_panel", // Make this the same as your opt_name unless you care otherwise
-		"default_icon_class" => "icon-large",
-		//"global_variable" => "of_options", // By default Redux sets your global variable to be the opt_name you set above. This is what the newest SMOF uses as it\'s variable name. You can change, but you may need to update your files.
-		//"intro_text" => "<p>This theme is now using Redux</p>" // Extra header info
-		"google_api_key" => "", // You must acquire a Google Web Fonts API key if you want Google Fonts to work
-	);
-	// Use this section if this is for a theme. Replace with plugin specific data if it is for a plugin.
-	$theme = wp_get_theme();
-	$args["display_name"] = $theme->get("Name");
-	$args["display_version"] = $theme->get("Version");
-
-	$ReduxFramework = new ReduxFramework($sections, $args);
-}';
-				echo "<h3>To ensure your data is properly migrated, you will need to add the following code to your theme. It will convert your SMOF data to Redux.</h3>";
-				echo '<textarea rows="20" cols="50" class="large-text code">';
-echo 'function migrateSMOFDataToRedux($oldname, $oldtheme=false) {
-	$database_newName = "redux_panel"; // Where your data will now be saved. Must match your opt_name in the ReduxFramework $args array.
-	';
-
-	if (SMOF_VERSION == "1.5.1" || SMOF_VERSION == "1.5.1") {
-		echo '$data = get_theme_mods(); // SMOF 1.5.1+';
-	} else {
-		if (defined('OPTIONS')) {
-			echo '$data = get_option('.OPTIONS.');';
-		} else {
-			echo '$data = get_option(""); // Please provide the option name where your SMOF values are stored.';
-		}
-	}
-	echo '
-	
-	$sections = '.str_replace(array("\r\n", "\n", "\r", "  ", "	"), '',var_export($sections, true)).';
-	if (isset($data) && !empty($data)) {
-		foreach($sections as $section) {
-			foreach($section["fields"] as $field) {
-				if (isset($data[$field["id"]]) && !empty($data[$field["id"]])) {
-					$data[$field["id"]] = SMOF2ReduxConvertValue($data[$field["id"]], $field["type"]); // Not sure why this happens. Huh.
-				}
-				if( isset( $field["required"] ) ) {
-		            $ReduxFramework->get_fold($field);
-			    }		
-			}
-		}
-		update_option($database_newName, $data); // Update the database
-	}
-		
-}
-add_action("after_switch_theme", "updatedatabaseoptions", 10 ,  2);
-
-if (!function_exists("SMOF2ReduxConvertValue")) {
-	function SMOF2ReduxConvertValue($value, $type) {
-	    switch ($type) {
-			case "text":
-				if (!is_array($value)) {
-					$value = stripcslashes($value); // Not sure why this happens. Huh.
-				}
-	    		break;
-	    	case "typography":
-				$default = array();
-				if (isset($value["size"])) {
-					$default["font-size"] = $value["size"];
-					$px = filter_var($default["font-size"], FILTER_SANITIZE_NUMBER_INT);
-					$default["units"] = str_replace($px, "", $default["font-size"]);
-				}
-				if (isset($value["color"])) {
-					$default["color"] = $value["color"];
-				}
-				if (isset($value["face"])) {
-					$fonts = array(
-						"Arial, Helvetica, sans-serif",
-						"\'Arial Black\', Gadget, sans-serif",
-						"\'Bookman Old Style\', serif",
-						"\'Comic Sans MS\', cursive",
-						"Courier, monospace",
-						"Garamond, serif",
-						"Georgia, serif",
-						"Impact, Charcoal, sans-serif",
-						"\'Lucida Console\', Monaco, monospace",
-						"\'Lucida Sans Unicode\', \'Lucida Grande\', sans-serif",
-						"\'MS Sans Serif\', Geneva, sans-serif",
-						"\'MS Serif\', \'New York\', sans-serif",
-						"\'Palatino Linotype\', \'Book Antiqua\', Palatino, serif",
-						"Tahoma, Geneva, sans-serif",
-						"\'Times New Roman\', Times, serif",
-						"\'Trebuchet MS\', Helvetica, sans-serif",
-						"Verdana, Geneva, sans-serif",
-	                );
-	                foreach($fonts as $font) {
-	                	if (strpos(strtolower($font),strtolower($value["face"])) !== false) {
-							$default["font-family"] = $font;
+		function convertValue($value, $type) {
+		    switch ($type) {
+				case "text":
+					if (!is_array($value)) {
+						$value = stripcslashes($value); // Not sure why this happens. Huh.
+					}
+		    		break;
+		    	case "typography":
+					$default = array();
+					if (isset($value['size'])) {
+						$default['font-size'] = $value['size'];
+						$px = filter_var($default['font-size'], FILTER_SANITIZE_NUMBER_INT);
+						$default['units'] = str_replace($px, "", $default['font-size']);
+					}
+					if (isset($value['color'])) {
+						$default['color'] = $value['color'];
+					}
+					if (isset($value['face'])) {
+						$fonts = array(
+							"Arial, Helvetica, sans-serif",
+							"'Arial Black', Gadget, sans-serif",
+							"'Bookman Old Style', serif",
+							"'Comic Sans MS', cursive",
+							"Courier, monospace",
+							"Garamond, serif",
+							"Georgia, serif",
+							"Impact, Charcoal, sans-serif",
+							"'Lucida Console', Monaco, monospace",
+							"'Lucida Sans Unicode', 'Lucida Grande', sans-serif",
+							"'MS Sans Serif', Geneva, sans-serif",
+							"'MS Serif', 'New York', sans-serif",
+							"'Palatino Linotype', 'Book Antiqua', Palatino, serif",
+							"Tahoma, Geneva, sans-serif",
+							"'Times New Roman', Times, serif",
+							"'Trebuchet MS', Helvetica, sans-serif",
+							"Verdana, Geneva, sans-serif",
+		                );
+		                foreach($fonts as $font) {
+		                	if (strpos(strtolower($font),strtolower($value['face'])) !== false) {
+								$default['font-family'] = $font;
+							}
+		                }
+					}
+					if (isset($value['style'])) {
+						if (strpos(strtolower($value['style']),'bold') !== false) {
+							$default['font-weight'] = "bold";
 						}
-	                }
-				}
-				if (isset($value["style"])) {
-					if (strpos(strtolower($value["style"]),"bold") !== false) {
-						$default["font-weight"] = "bold";
-					}
-					if (strpos(strtolower($value["style"]),"italic") !== false) {
-						$default["font-style"] = "italic";
-					}
-				} 			
-				$value = $default;
-	    		break;
-	    	case "border":
-	    		if (isset($value["width"])) {
-	    			$value["border-width"] = $value["width"]."px";
-	    			$value["units"] = "px";
-	    			unset($value["width"]);
-	    		}
-				if (isset($value["color"])) {
-	    			$value["border-color"] = $value["color"];
-	    			unset($value["color"]);
-	    		}
-				if (isset($value["style"])) {
-	    			$value["border-style"] = $value["style"];
-	    			unset($value["style"]);
-	    		}
-	    		break;			    			    			    			    		
-	    	case "upload":
-	    	case "image":
-			case "media":
-				$value = array("url"=>$value);
-	    		break;    	
-	    	default:
-	    		break;
-	    }
-		return $value;
-	}	
-}
-
-';
-
-				echo "</textarea>";
-		    } 
-		    echo '</div>';
-		}		
-
-	}
-	
-}
-
-
-
-if (!function_exists('SMOF2ReduxConvertValue')) {
-	function SMOF2ReduxConvertValue($value, $type) {
-	    switch ($type) {
-			case "text":
-				if (!is_array($value)) {
-					$value = stripcslashes($value); // Not sure why this happens. Huh.
-				}
-	    		break;
-	    	case "typography":
-				$default = array();
-				if (isset($value['size'])) {
-					$default['font-size'] = $value['size'];
-					$px = filter_var($default['font-size'], FILTER_SANITIZE_NUMBER_INT);
-					$default['units'] = str_replace($px, "", $default['font-size']);
-				}
-				if (isset($value['color'])) {
-					$default['color'] = $value['color'];
-				}
-				if (isset($value['face'])) {
-					$fonts = array(
-						"Arial, Helvetica, sans-serif",
-						"'Arial Black', Gadget, sans-serif",
-						"'Bookman Old Style', serif",
-						"'Comic Sans MS', cursive",
-						"Courier, monospace",
-						"Garamond, serif",
-						"Georgia, serif",
-						"Impact, Charcoal, sans-serif",
-						"'Lucida Console', Monaco, monospace",
-						"'Lucida Sans Unicode', 'Lucida Grande', sans-serif",
-						"'MS Sans Serif', Geneva, sans-serif",
-						"'MS Serif', 'New York', sans-serif",
-						"'Palatino Linotype', 'Book Antiqua', Palatino, serif",
-						"Tahoma, Geneva, sans-serif",
-						"'Times New Roman', Times, serif",
-						"'Trebuchet MS', Helvetica, sans-serif",
-						"Verdana, Geneva, sans-serif",
-	                );
-	                foreach($fonts as $font) {
-	                	if (strpos(strtolower($font),strtolower($value['face'])) !== false) {
-							$default['font-family'] = $font;
+						if (strpos(strtolower($value['style']),'italic') !== false) {
+							$default['font-style'] = "italic";
 						}
-	                }
-				}
-				if (isset($value['style'])) {
-					if (strpos(strtolower($value['style']),'bold') !== false) {
-						$default['font-weight'] = "bold";
+					} 			
+					$value = $default;
+		    		break;
+		    	case "border":
+		    		if (isset($value['width'])) {
+		    			$value['border-width'] = $value['width']."px";
+		    			$value['units'] = "px";
+		    			unset($value['width']);
+		    		}
+					if (isset($value['color'])) {
+		    			$value['border-color'] = $value['color'];
+		    			unset($value['color']);
+		    		}
+					if (isset($value['style'])) {
+		    			$value['border-style'] = $value['style'];
+		    			unset($value['style']);
+		    		}
+		    		break;			    			    			    			    		
+		    	case "upload":
+		    	case "image":
+				case "media":
+					if (!empty($value)) {
+						$value = array('url'=>$value);	
 					}
-					if (strpos(strtolower($value['style']),'italic') !== false) {
-						$default['font-style'] = "italic";
-					}
-				} 			
-				$value = $default;
-	    		break;
-	    	case "border":
-	    		if (isset($value['width'])) {
-	    			$value['border-width'] = $value['width']."px";
-	    			$value['units'] = "px";
-	    			unset($value['width']);
-	    		}
-				if (isset($value['color'])) {
-	    			$value['border-color'] = $value['color'];
-	    			unset($value['color']);
-	    		}
-				if (isset($value['style'])) {
-	    			$value['border-style'] = $value['style'];
-	    			unset($value['style']);
-	    		}
-	    		break;			    			    			    			    		
-	    	case "upload":
-	    	case "image":
-			case "media":
-				if (!empty($value)) {
-					$value = array('url'=>$value);	
-				}
-	    		break;    	
-	    	default:
-	    		break;
-	    }
-		return $value;
-	}	
+		    		break;    	
+		    	default:
+		    		break;
+		    }
+			return $value;			
+		}	
+	}
 }
