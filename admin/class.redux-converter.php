@@ -94,7 +94,7 @@ class Redux_Converter {
 	function remove_demo_items( $ReduxPlugin ) {
 		// Used to hide the activation notice informing users of the demo panel. Only used when Redux is a plugin.
 		remove_action('admin_notices', array( $ReduxPlugin, 'admin_notices' ) );
-		remove_filter( 'plugin_row_meta', array( $ReduxPlugin, 'plugin_metalinks' ), null, 2 );
+		//remove_filter( 'plugin_row_meta', array( $ReduxPlugin, 'plugin_metalinks' ), null, 2 );
 	}
 
 	function tgm_init() {

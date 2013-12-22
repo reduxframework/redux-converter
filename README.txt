@@ -12,7 +12,7 @@ Redux Converter allows you to get going with Redux Framework almost instantly. J
 
 == Description ==
 
-We believe in Redux so much, we thought we'd make it easier for you to switch over. Redux Converter takes the pain out of trying Redux with your current configuration. It auto-generates a fully functional panel with compatable fields. It even has auto-generated code for you to migrate your data from/to.
+Redux Converter takes the pain out of trying Redux with your current framework. It auto-generates a fully functional panel with compatable fields. It even has auto-generated code for you to migrate your data from/to.
 
 After you intall the plugin, it will search for supported framework(s) that may be installed. You will then see a new Admin Menu option names `XXX 2 Redux`. Click that item for a fully functional panel using Redux Framework, your current panel configuration and your current data.
 
