@@ -342,7 +342,7 @@ class Redux_Converter {
 		}
 		Mustache_Autoloader::register();
 		$m = new Mustache_Engine;
-		return htmlspecialchars_decode(htmlspecialchars_decode( $m->render(file_get_contents(dirname(__FILE__).'/includes/outputClass.php'), $data ) ) );
+		return '<?php'.htmlspecialchars_decode(htmlspecialchars_decode( $m->render(file_get_contents(dirname(__FILE__).'/includes/outputClass.mustache'), $data ) ) );
 
 	}
 
