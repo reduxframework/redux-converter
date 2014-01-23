@@ -1,10 +1,10 @@
 === Redux Converter ===
 Contributors: dovyp
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3WQGEY4NSYE38
-Tags: comments, spam
+Tags: option framework, framework, converter, optiontree, smof
 Requires at least: 3.5.1
 Tested up to: 3.8
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -18,6 +18,10 @@ After you intall the plugin, it will search for supported framework(s) that may 
 
 = Supported Frameworks = 
 * SMOF - Slightly Modified Options Framework
+* OptionTree
+
+= Found a Bug? Need Help? =
+Visit our issue tracker at https://github.com/ReduxFramework/redux-converter/issues
 
 == Installation ==
 
@@ -72,7 +76,10 @@ Please donate!
 
 == Changelog ==
 
-= 1.0 =
+= 1.1.0 =
+* Full OptionTree conversion and deploying on WordPress.org.
+
+= 1.0.0 =
 * Full SMOF conversion and deploying on WordPress.org.
 
 == Updates ==
