@@ -15,7 +15,6 @@ if( !class_exists( 'OptionTree2Redux' ) ) {
 			
 			$this->converter = $converter;
 
-
 			add_action('init', array($this, 'addPanel'), 100);
 
 			add_action( 'admin_footer', array($this,'ajax_javascript') );
@@ -103,7 +102,7 @@ if( !class_exists( 'OptionTree2Redux' ) ) {
 					$value['desc'] = $value['content'];
 					unset($value['content']);	
 				}
-
+				$value['icon'] = "el-icon-cog";
 				$value['fields'] = array();
 				$sections[$value['id']] = $value;
 			}
@@ -146,19 +145,25 @@ if( !class_exists( 'OptionTree2Redux' ) ) {
 			}
 
 			switch ($value['type']) {
-				case "category-background":
+				case "background":
 
 				break;
 				case "category-checkbox":
 					$value['type'] = "checkbox";
-					$value['data'] = "category";					
+					$value['data'] = "category";
+					$value['args'] = array( 'hide_empty' => false );				
 				break;
 				case "category-select":
 					$value['type'] = "select";
-					$value['data'] = "category";					
+					$value['data'] = "category";
+					$value['args'] = array( 'hide_empty' => false );
+					$value['multi'] = false;
 				break;
 				case "checkbox":
-					$value['type'] = "checkbox";					
+					$value['type'] = "checkbox";
+					if (isset($value['options'])) {
+
+					}
 				break;
 				case "colorpicker":
 					$value['type'] = "color";
@@ -172,36 +177,45 @@ if( !class_exists( 'OptionTree2Redux' ) ) {
 					$value['theme'] = 'monokai';
 				break;
 				case "custom-post-type-select":
+					$value['multi'] = false;
 					$value['type'] = "select";
-					if (isset($value['post_type'])) {
-						$value['args'] = array( 'post_type' => array( explode( ',', $value['post_type'] ) ), 'posts_per_page' => -1, 'orderby' => 'title', 'order' => 'ASC', 'post_status' => 'any' );
-						unset($value['post_type']);	
-					}
-					$value['data'] = "post_type";					
+			 		/* setup the post types */
+			        $value['post_type'] = isset( $value['post_type'] ) ? explode( ',', $value['post_type'] ) : array( 'post' );
+			        /* query posts array */
+			        $value['args'] = apply_filters( 'ot_type_custom_post_type_checkbox_query', array( 'post_type' => $value['post_type'], 'posts_per_page' => -1, 'orderby' => 'title', 'order' => 'ASC', 'post_status' => 'any' ), $value['id'] );
+			        unset($value['post_type']);	
+			        $value['data'] = "posts";				
 				break;
 				case "custom-post-type-checkbox":
 					$value['type'] = "checkbox";
-					if (isset($value['post_type'])) {
-						$value['args'] = array( 'post_type' => array( explode( ',', $value['post_type'] ) ), 'posts_per_page' => -1, 'orderby' => 'title', 'order' => 'ASC', 'post_status' => 'any' );
-						unset($value['post_type']);	
-					}
-					$value['data'] = "post_type";					
+			 		/* setup the post types */
+			        $value['post_type'] = isset( $value['post_type'] ) ? explode( ',', $value['post_type'] ) : array( 'post' );
+			        /* query posts array */
+			        $value['args'] = apply_filters( 'ot_type_custom_post_type_checkbox_query', array( 'post_type' => $value['post_type'], 'posts_per_page' => -1, 'orderby' => 'title', 'order' => 'ASC', 'post_status' => 'any' ), $value['id'] );
+			        unset($value['post_type']);	
+			        $value['data'] = "posts";				
 				break;
 				case "list-item":
+//print_r($value);
 					$value['type'] = "group";
+					$value['groupname'] = $value['title'];
 					if (isset($value['settings'])) {
-						$value['subfields'] = array();
+						$value['fields'] = array();
 						foreach($value['settings'] as $setting)	{
-							$value['subfields'][] = $this->cleanSetting($setting);
+							$value['fields'][] = $this->cleanSetting($setting);
 						}
 					}
+					//print_r($value['fields']);
+
+					//exit();
 				break;
 				case "slider":
 					$value['type'] = "slides";
 				break;					
-				//case "measurement":
-				
-				//break;	
+				case "measurement":
+					$value['type'] = "spacing";
+					$value['all'] = true;
+				break;	
 				case "numeric_slider":
 					$value['type'] = "slider";
 					if (isset($value['min_max_step'])) {
@@ -219,6 +233,7 @@ if( !class_exists( 'OptionTree2Redux' ) ) {
 				case "page-select":
 					$value['type'] = "select";
 					$value['data'] = "page";
+					$value['multi'] = false;
 				break;						
 				case "page-checkbox":
 					$value['type'] = "checkbox";
@@ -227,6 +242,7 @@ if( !class_exists( 'OptionTree2Redux' ) ) {
 				case "post-select":
 					$value['type'] = "select";
 					$value['data'] = "post";
+					$value['multi'] = false;
 				break;						
 				case "post-checkbox":
 					$value['type'] = "checkbox";
@@ -254,28 +270,38 @@ if( !class_exists( 'OptionTree2Redux' ) ) {
 				case "sidebar-select":
 					$value['type'] = "select";
 					$value['data'] = "sidebar";
+					$value['multi'] = false;
 				break;	
 				case "sidebar-checkbox":
 					$value['type'] = "checkbox";
 					$value['data'] = "sidebar";
+
 				break;					
 				case "tag-checkbox":
 					$value['type'] = "checkbox";
-					$value['title'] = $value['title']."Dovy";
+					$value['title'] = $value['title'];
 					$value['data'] = "tags";
 				break;						
 				case "tag-select":
 					$value['type'] = "select";
-					$value['title'] = $value['title']."Dovy";
+					$value['title'] = $value['title'];
 					$value['data'] = "tags";
+					$value['multi'] = false;
 				break;						
 				case "taxonomy-select":
+			        $taxonomy = isset( $value['taxonomy'] ) ? explode( ',', $value['taxonomy'] ) : array( 'category' );
+			        unset( $value['taxonomy'] );
+        			$value['args'] = array( 'hide_empty' => false, 'taxonomy' => $taxonomy );
 					$value['type'] = "select";
-					$value['data'] = "taxonomy";
+					$value['data'] = "category";
+					$value['multi'] = false;
 				break;						
 				case "taxonomy-checkbox":
+			        $taxonomy = isset( $value['taxonomy'] ) ? explode( ',', $value['taxonomy'] ) : array( 'category' );
+			        unset( $value['taxonomy'] );
+        			$value['args'] = array( 'hide_empty' => false, 'taxonomy' => $taxonomy );				
 					$value['type'] = "checkbox";
-					$value['data'] = "taxonomy";
+					$value['data'] = "category";
 				break;						
 				case "text":
 				case "input":
@@ -288,17 +314,21 @@ if( !class_exists( 'OptionTree2Redux' ) ) {
 					$value['type'] = "textarea";
 				break;						
 				case "textblock":
+					$value['type'] = "raw";
+					$value['content'] = $value['desc'];
+					unset($value['desc'], $value['title']);
+				break;						
+				case "textblock-titled":
 					$value['type'] = "info";
-				//break;						
-				//case "textblock-tiles":
-				
-				//break;						
+				break;						
 				case "typography":
 				
 				break;						
 				case "upload":
 					$value['type'] = "media";
 				break;
+				case "gallery":
+				break;				
 				default:
 					if ($withWarnings) {
 						$content = "<h3 style='color: red;'>Found a field with an unknown type!</h3> <p>Perhaps this was a custom field and will need to be remade for use within Redux. This was the field's configuration:</p>";
@@ -329,6 +359,8 @@ if( !class_exists( 'OptionTree2Redux' ) ) {
 			$this->version = OT_VERSION;		
 
 			$sections = $this->getSections();
+
+			$this->data = get_option( 'option_tree' );
 
 			if (!empty($sections) && class_exists('ReduxFramework')) {
 
@@ -406,29 +438,26 @@ if( !class_exists( 'OptionTree2Redux' ) ) {
 							'content' => '<center><input type="hidden" class="convertToReduxNonce" value="'.wp_create_nonce( 'convertToRedux'.$this->framework ).'"><a href="#" target="_blank" class="button button-primary redux-converter-action">View Redux Config File</a> <a href="#" data-action="download" class="button button-primary redux-converter-action">Download Redux Config File</a></center>',
 							
 						),			    		
-			    		
-			    			
 			    	)
 			    );
 
 				$ReduxFramework = new ReduxFramework($sections, $args);	
-				global $smof_data; // Always get from SMOF
-				global $data;
-				$smof = array();
+
+				//print_r(get_option( 'option_tree' ));
+
+				//print_r(ot_get_option('my_category_checkbox'));
+				//echo ot_get_option('my_category_checkbox');
+
 				$convertData = false;
 				if ( empty( $ReduxFramework->options ) || ( isset( $ReduxFramework->options['redux_convert_refresh_data'] ) && $ReduxFramework->options['redux_convert_refresh_data'] == 1 ) ) {
 					$convertData = true;
-					if (!empty($smof_data)) {
-						$ReduxFramework->options = $smof_data;	
-					} else if (!empty($data)) {
-						$ReduxFramework->options = $data;	
-					}					
+					$ReduxFramework->options = get_option( 'option_tree' );
 				}
 				foreach($sections as $section) {
 					if (isset($section['fields'])) {
 						foreach($section['fields'] as $field) {
 							if ($convertData && isset($ReduxFramework->options[$field['id']]) && !empty($ReduxFramework->options[$field['id']])) {
-								$ReduxFramework->options[$field['id']] = $this->convertValue($ReduxFramework->options[$field['id']], $field['type']); // Not sure why this happens. Huh.
+								$ReduxFramework->options[$field['id']] = $this->convertValue($ReduxFramework->options[$field['id']], $field); // Not sure why this happens. Huh.
 							}
 							if( isset( $field['required'] ) ) {
 					            $ReduxFramework->get_fold($field);
@@ -440,10 +469,31 @@ if( !class_exists( 'OptionTree2Redux' ) ) {
 			}			
 		}
 
-		function convertValue($value, $type) {
-		    switch ($type) {
+		function convertValue($value, $field) {
+		    switch ($field['type']) {
 				case "text":
-		    		break;  	
+		    		break;  
+				case "media":
+						$value = array('url' => $value );
+		    		break; 		    		
+				case "checkbox":
+				case "taxonomy-checkbox":
+				case "tag-checkbox":
+				case "sidebar-checkbox":
+				case "post-checkbox":
+				case "page-checkbox":
+				case "custom-post-type-checkbox":
+				case "category-checkbox":		
+					foreach ($value as $key => $val) {
+						//if (count($value) == 1) {
+							//$value[$key] = 1;
+						//} else {
+							$value[$key] = 1;	
+						//}
+						
+					}
+
+		    		break;  		    			
 		    	default:
 		    		break;
 		    }

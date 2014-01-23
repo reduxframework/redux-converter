@@ -500,3 +500,47 @@ if( !class_exists( 'SMOF2Redux' ) ) {
 		}	
 	}
 }
+
+/*
+1.5
+	SMOF_VERSION
+	define( 'OPTIONS', $theme_name.'_options' );
+	$data = of_get_options();
+	$smof_data = of_get_options();
+
+
+1.4.3
+	define( 'OPTIONS', $theme_name.'_options' );
+
+        if( is_child_theme() ) {
+                $temp_obj = wp_get_theme();
+                $theme_obj = wp_get_theme( $temp_obj->get('Template') );
+        } else {
+                $theme_obj = wp_get_theme();    
+        }
+
+        define( 'OPTIONS', $theme_name.'_options' );
+
+        SMOF_VERSION -> Version
+
+1.4
+	SMOF_VERSION -> Version
+	DEFINE: OPTIONS
+	$data => values
+	$data = get_option(OPTIONS);	
+
+1.3
+	DEFINE: OPTIONS
+	$of_options => Options
+	$data => values
+	$data = get_option(OPTIONS);
+
+v1.2
+
+
+v1.1 13/11/11
+	DEFINE: OPTIONS
+	$of_options => Options
+	$data => values
+	$data = get_option(OPTIONS);
+ */

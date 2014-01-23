@@ -154,8 +154,8 @@ class Redux_Converter {
 			}
 		}
 		if (defined('OT_VERSION')) {
-			//require_once(dirname(__FILE__).'/class.converter.OptionTree.php');	
-			//$this->frameworks['OptionTree'][] = new OptionTree2Redux($this);
+			require_once(dirname(__FILE__).'/class.converter.OptionTree.php');	
+			$this->frameworks['OptionTree'][] = new OptionTree2Redux($this);
 		}
 	}
 
