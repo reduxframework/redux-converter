@@ -70,7 +70,6 @@ if( !class_exists( 'OptionTree2Redux' ) ) {
 			}
 
 			$_REQUEST['uuid'] = uniqid($_REQUEST['nonce']);
-			unset($_REQUEST['migrate_data']);
 
 		    $_REQUEST['sections'] = $this->getSections();
 
