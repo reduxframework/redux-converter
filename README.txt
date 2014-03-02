@@ -3,7 +3,7 @@ Contributors: dovyp
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3WQGEY4NSYE38
 Tags: option framework, framework, converter, optiontree, smof
 Requires at least: 3.5.1
-Tested up to: 3.8
+Tested up to: 3.8.1
 Stable tag: 1.1.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -75,6 +75,9 @@ Please donate!
 1. This demonstrates how you can take any theme using one of the accepted frameworks, and run it through Redux. Avada is a trademark of ThemeFusion. We only used this theme as it has a fair amount of exposure. We claim no rights to Avada.  :P
 
 == Changelog ==
+
+= 1.1.1 =
+* Small fix where the converter hook was commented out even if the user wanted it.
 
 = 1.1.0 =
 * Full OptionTree conversion and deploying on WordPress.org.
