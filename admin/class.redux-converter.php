@@ -74,6 +74,13 @@ class Redux_Converter {
 	 */
 	private function __construct() {
 
+		// TGM Init to install Redux Framework
+		add_action( 'tgmpa_register', array( $this, 'tgm_init' ) );			
+
+		if (!class_exists('ReduxFramework')) {
+			return;
+		}
+
 		// Load plugin text domain
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ) );
 
@@ -82,9 +89,6 @@ class Redux_Converter {
 
 		// Activate plugin when new blog is added
 		add_action( 'wpmu_new_blog', array( $this, 'activate_new_site' ) );
-
-		// TGM Init to install Redux Framework
-		add_action( 'tgmpa_register', array( $this, 'tgm_init' ) );
 
 		add_action( 'redux/plugin/hooks', array( $this, 'remove_demo_items' ) );	
 
@@ -144,18 +148,17 @@ class Redux_Converter {
 	}
 
 	function check_for_frameworks() {
-		if (class_exists('Options_Machine')) {
-			require_once(dirname(__FILE__).'/class.converter.SMOF.php');
-			$this->frameworks['SMOF'][] = new SMOF2Redux($this);
-		} else {
-			if (function_exists('of_options') || function_exists('of_reset_options')) {
-				//require_once(dirname(__FILE__).'/class.converter.OptionFramework.php');
-				//$this->frameworks['OptionFramework'][] = new OptionFramework2Redux($this);
-			}
+		$num = count($this->frameworks['SMOF']);
+		require_once(dirname(__FILE__).'/class.converter.base.php');
+		
+		if ( class_exists( 'Options_Machine' ) ) {
+			$this->frameworks['SMOF'][] = new Convert2Redux( $this, "SMOF" );
+		} else if ( function_exists( 'of_options' ) || function_exists( 'of_reset_options' ) ) {
+			//require_once(dirname(__FILE__).'/class.converter.OptionFramework.php');
+			//$this->frameworks['OptionFramework'][] = new OptionFramework2Redux($this);
 		}
-		if (defined('OT_VERSION')) {
-			require_once(dirname(__FILE__).'/class.converter.OptionTree.php');	
-			$this->frameworks['OptionTree'][] = new OptionTree2Redux($this);
+		if ( defined('OT_VERSION' ) ) {
+			$this->frameworks['SMOF'][] = new Convert2Redux( $this, "OptionTree" );
 		}
 	}
 
