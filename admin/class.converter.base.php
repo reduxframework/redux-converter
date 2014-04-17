@@ -26,6 +26,12 @@ if( !class_exists( 'Convert2Redux' ) ) {
 			?>
 			<script type="text/javascript">
 			jQuery(document).ready(function($) {
+				$('.proceed_to_convert').click(function(e) {
+					e.preventDefault();
+					jQuery('.redux-group-tab-link-a:last').click();
+					return false;
+				});
+
 				$('.redux-converter-action').click(function() {
 					var parent = $(this).parents('.redux-group-tab:first');
 					var data = {
@@ -112,7 +118,7 @@ if( !class_exists( 'Convert2Redux' ) ) {
 					'show_import_export' => false,
 					'page_slug' => $this->framework.'Redux_Converter',
 					'enqueue' => false,
-					'intro_text' => '<p>This is your panel converted. Saving will be saved to a transient value which gets reset every hour. <a href="javascript:jQuery(\'.redux-group-tab-link-a:last\').click();">Proceed here</a> to get the export code you would need to migrate from '.$this->framework.' to Redux.</p>'
+					'intro_text' => '<p>This is your panel converted. Saving will be saved to a transient value which gets reset every hour. <a href="#" class="proceed_to_convert">Proceed here</a> to get the export code you would need to migrate from '.$this->framework.' to Redux.</p>'
 				);
 				$theme = wp_get_theme();
 
