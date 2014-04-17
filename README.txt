@@ -76,7 +76,7 @@ Please donate!
 
 == Changelog ==
 
-= 1.1.1 =
+= 1.1.2 =
 * Small fix where a link led to nowhere and confused devs.
 
 = 1.1.1 =
