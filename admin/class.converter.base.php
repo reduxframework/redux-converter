@@ -112,7 +112,7 @@ if( !class_exists( 'Convert2Redux' ) ) {
 					'show_import_export' => false,
 					'page_slug' => $this->framework.'Redux_Converter',
 					'enqueue' => false,
-					'intro_text' => '<p>This is your panel converted. Saving will be saved to a transient value which gets reset every hour. <a href="./admin.php?page='.$this->framework.'_2_redux">Proceed here</a> to get the export code you would need to migrate from '.$this->framework.' to Redux.</p>'
+					'intro_text' => '<p>This is your panel converted. Saving will be saved to a transient value which gets reset every hour. <a href="javascript:jQuery(\'.redux-group-tab-link-a:last\').click();">Proceed here</a> to get the export code you would need to migrate from '.$this->framework.' to Redux.</p>'
 				);
 				$theme = wp_get_theme();
 
