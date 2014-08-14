@@ -16,7 +16,7 @@
  * Plugin Name:       Redux Converter
  * Plugin URI:        https://github.com/ReduxFramework/redux-converter
  * Description:       Try Redux Framework from the convenience of your own framework. Also export config files for your Redux panel and migrate data.
- * Version:           1.1.3
+ * Version:           1.1.3.1
  * Author:            Dovy Paukstys
  * Author URI:        http://github.com/dovy/
  * Text Domain:       redux-converter

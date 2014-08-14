@@ -42,10 +42,12 @@
                                         action: '<?php echo $this->framework; ?>_2_Redux',
                                         nonce: parent.find( '.convertToReduxNonce' ).val(),
                                         opt_name: parent.find( '#redux_opt_name-text' ).val(),
+                                        array_key: $( '#redux_panel_array_key_value' ).val(),
                                         migrate_data: parent.find( '#redux_convert_data' ).val(),
                                         global_variable: parent.find( '#redux_global_variable-text' ).val(),
                                         delete_data: parent.find( '#<?php echo $this->framework; ?>2Redux_Panel_redux_delete_old_data_1_0' ).is( ":checked" ),
                                     };
+                                    console.log( data );
                                     if ( $( this ).data( 'action' ) == "download" ) {
                                         data.download = true;
                                     }
@@ -84,8 +86,9 @@
 
                 $this->convertDataClass = new $class();
 
+
                 if ( $this->framework == "VafPress" && isset( $this->converter->vafpress_config ) && ! empty( $this->converter->vafpress_config ) ) {
-                    $this->convertDataClass->config = $this->converter->vafpress_config;
+                    $this->convertDataClass->config = $this->converter->vafpress_config[ $_REQUEST['array_key'] ];
                 }
 
                 $this->convertDataClass->init();
@@ -98,7 +101,6 @@
 
                     $_REQUEST['sections'] = $this->converter->objectToHTML( $_REQUEST['sections'] );
 
-                    global $wp_filesystem;
                     $_REQUEST['migrate_data_class'] = str_replace( '<?php', '', file_get_contents( dirname( __FILE__ ) . '/class.converter.' . $this->framework . '.data.php' ) );
 
                     echo $this->converter->getConfigFile( $_REQUEST );
@@ -110,14 +112,26 @@
 
 
             public function addPanel() {
-
+                $hidden_input = "";
                 include( dirname( __FILE__ ) . '/class.converter.' . $this->framework . '.data.php' );
                 $class                  = $this->framework . '2Redux_Data';
                 $this->convertDataClass = new $class();
                 if ( $this->framework == "VafPress" && isset( $this->converter->vafpress_config ) && ! empty( $this->converter->vafpress_config ) ) {
-                    $this->convertDataClass->config = $this->converter->vafpress_config;
+                    if ( ! isset( $this->vafpress_loop ) ) {
+                        $this->vafpress_loop = $this->converter->vafpress_config;
+                    }
+                    reset( $this->vafpress_loop );
+                    $config_key                     = key( $this->vafpress_loop );
+                    $this->convertDataClass->config = $this->converter->vafpress_config[ $config_key ];
+                    $hidden_input                   = '<input type="hidden" id="redux_panel_array_key_value" value=' . $config_key . '>';
+                    unset( $this->vafpress_loop[ $config_key ] );
+                    if ( ! empty( $this->vafpress_loop ) ) {
+                        addPanel();
+                    }
                 }
+
                 $this->convertDataClass->init();
+
 
                 if ( ! empty( $this->convertDataClass->sections ) && class_exists( 'ReduxFramework' ) ) {
 
@@ -192,7 +206,7 @@
                             array(
                                 'id'      => 'redux_download_file',
                                 'type'    => 'raw',
-                                'content' => '<br><center><input type="hidden" class="convertToReduxNonce" value="' . wp_create_nonce( 'convertToRedux' . $this->framework ) . '"><a href="#" target="_blank" class="button button-primary redux-converter-action">View Redux Config File</a> <a href="#" data-action="download" class="button button-primary redux-converter-action">Download Redux Config File</a></center>',
+                                'content' => $hidden_input . '<br><center><input type="hidden" class="convertToReduxNonce" value="' . wp_create_nonce( 'convertToRedux' . $this->framework ) . '"><a href="#" target="_blank" class="button button-primary redux-converter-action">View Redux Config File</a> <a href="#" data-action="download" class="button button-primary redux-converter-action">Download Redux Config File</a></center>',
 
                             ),
 
