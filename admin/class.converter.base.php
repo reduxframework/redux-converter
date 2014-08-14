@@ -89,7 +89,7 @@ if( !class_exists( 'Convert2Redux' ) ) {
 				$_REQUEST['sections'] =  $this->converter->objectToHTML( $_REQUEST['sections'] );
 
 				global $wp_filesystem;
-				$_REQUEST['migrate_data_class'] = str_replace('<?php', '', $wp_filesystem->get_contents(dirname(__FILE__).'/class.converter.'.$this->framework.'.data.php') );
+				$_REQUEST['migrate_data_class'] = str_replace('<?php', '', file_get_contents(dirname(__FILE__).'/class.converter.'.$this->framework.'.data.php') );
 
 				echo $this->converter->getConfigFile($_REQUEST);
 
