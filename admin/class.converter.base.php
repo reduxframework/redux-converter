@@ -16,7 +16,10 @@
 
                 $this->converter = $converter;
                 $this->framework = $framework;
-                add_action( 'init', array( $this, 'addPanel' ), 100 );
+                if ( !defined( 'DOING_AJAX' ) || !DOING_AJAX ) {
+                    add_action( 'init', array( $this, 'addPanel' ), 100 );
+                }
+
                 add_action( 'admin_footer', array( $this, 'ajax_javascript' ) );
                 add_action( 'wp_ajax_' . $this->framework . '_2_Redux', array( $this, 'ajax_callback' ) );
 
@@ -64,7 +67,6 @@
             function ajax_callback() {
 
                 $_REQUEST = array_filter( $_REQUEST );
-                //print_r($_REQUEST);
 
                 if ( ! wp_verify_nonce( $_REQUEST['nonce'], 'convertToRedux' . $this->framework ) ) {
                     //die();
@@ -112,6 +114,7 @@
 
 
             public function addPanel() {
+
                 $hidden_input = "";
                 include( dirname( __FILE__ ) . '/class.converter.' . $this->framework . '.data.php' );
                 $class                  = $this->framework . '2Redux_Data';
