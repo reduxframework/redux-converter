@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: option framework, framework, converter, optiontree, smof
 Requires at least: 3.5.1
 Tested up to: 3.9.0
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -75,6 +75,9 @@ Please donate!
 1. This demonstrates how you can take any theme using one of the accepted frameworks, and run it through Redux. Avada is a trademark of ThemeFusion. We only used this theme as it has a fair amount of exposure. We claim no rights to Avada.  :P
 
 == Changelog ==
+
+= 1.1.3 =
+* Small fixes for the new version of Redux. Better configurations.
 
 = 1.1.2 =
 * Small fix where a link led to nowhere and confused devs.
