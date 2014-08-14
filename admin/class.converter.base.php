@@ -193,16 +193,16 @@ if( !class_exists( 'Convert2Redux' ) ) {
 				if ( empty( $ReduxFramework->options ) || ( isset( $ReduxFramework->options['redux_convert_refresh_data'] ) && is_array($ReduxFramework->options['redux_convert_refresh_data']) && $ReduxFramework->options['redux_convert_refresh_data'][1] == 1 ) ) {
 					$ReduxFramework->options = $this->convertDataClass->converted_data;
 				}
-				foreach($this->convertDataClass->sections as $section) {
-					if (isset($section['fields'])) {
-						foreach($section['fields'] as $field) {
-							if( isset( $field['required'] ) ) {
-					            $ReduxFramework->get_fold($field);
-						    }		
-						}						
-					}
-					
-				}
+				//foreach($this->convertDataClass->sections as $section) {
+				//	if (isset($section['fields'])) {
+				//		foreach($section['fields'] as $field) {
+				//			if( isset( $field['required'] ) ) {
+				//	            //$ReduxFramework->get_fold($field);
+				//		    }
+				//		}
+				//	}
+				//
+				//}
 			}			
 		}
 

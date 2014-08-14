@@ -201,8 +201,11 @@ if( !class_exists( 'SMOF2Redux_Data' ) ) {
 			    		break;
 			    	case "sliderui":
 			    		$value['type'] = "slider";
-			    		break;	    			    			    			    			    		
-			    	case "upload":
+			    		break;
+                    case "spinner":
+                        //$value['type'] = "s";
+                        break;
+                    case "upload":
 					case "media":
 			    		$value['type'] = "media";
 			    		if (isset($value['mod']) && $value['mod'] == "min") {
